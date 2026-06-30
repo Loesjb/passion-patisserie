@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Statut {
+  RECUE
+  DEVIS_ENVOYE
+  ACOMPTE_PAYE
+  EN_PRODUCTION
+  PRET
+  LIVRE
+  ANNULEE
+}
+
+enum PointVente {
+  COCODY_ABATTA
+  YOPOUGON
+  LIVRAISON
+}
+
+enum TypePaiement {
+  ACOMPTE
+  SOLDE
+}
+
+model Client {
+  id        String     @id @default(cuid())
+  nom       String
+  telephone String     @unique
+  createdAt DateTime   @default(now())
+  commandes Commande[]
+}
+
+model Modele {
+  id            String   @id @default(cuid())
+  nom           String
+  categorie     String
+  photoUrl      String?
+  prixIndicatif String?
+  createdAt     DateTime @default(now())
+}
+
+model Commande {
+  id              String       @id @default(cuid())
+  numero          String       @unique
+  clientId        String
+  client          Client       @relation(fields: [clientId], references: [id])
+  pointVente      PointVente
+  typeEvenement   String
+  dateEvenement   DateTime?
+  nbParts         Int?
+  parfum          String?
+  theme           String?
+  imageUrl        String?
+  budgetIndicatif String?
+  prixDevis       Float?
+  statut          Statut       @default(RECUE)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  paiements       Paiement[]
+}
+
+model Paiement {
+  id           String       @id @default(cuid())
+  commandeId   String
+  commande     Commande     @relation(fields: [commandeId], references: [id])
+  montant      Float
+  type         TypePaiement
+  moyen        String
+  date         DateTime     @default(now())
+  enregistrePar String?
+}
+
+model AdminUser {
+  id    String @id @default(cuid())
+  nom   String
+  email String @unique
+  role  String @default("admin")
+}
